@@ -1,0 +1,12 @@
+{
+  "background_color": "#000000",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "24h地球时钟",
+  "orientation": "any",
+  "scope": "/https://lanhuayue111.github.io/24earthclock/",
+  "short_name": "地球时钟",
+  "start_url": "https://lanhuayue111.github.io/24earthclock/",
+  "theme_color": "#333333",
+  "lang": "zh"
+}
