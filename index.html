@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>24小时地球时钟</title>
+    <title>24小时地球时钟（最终优化版）</title>
     <style>
         * {
             margin: 0;
@@ -11,7 +11,7 @@
             box-sizing: border-box;
         }
         body {
-            background: transparent; /* 外面完全透明 */
+            background: transparent;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -24,12 +24,12 @@
             border: 10px solid #333;
             position: relative;
             
-            /* 地球背景 只在时钟圆形内部显示 */
             background-image: url('https://picsum.photos/id/1002/800/800');
             background-size: cover;
             background-position: center;
         }
-        .num {
+        /* 外圈白色24小时数字 */
+        .num-24 {
             position: absolute;
             width: 100%;
             height: 100%;
@@ -38,6 +38,18 @@
             font-weight: bold;
             color: white;
             text-shadow: 0 0 5px black;
+        }
+        /* 内圈红色12小时数字（分针参考） */
+        .num-12 {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: red;
+            text-shadow: 0 0 3px black;
+            z-index: 5;
         }
         .hand {
             position: absolute;
@@ -78,6 +90,22 @@
             transform: translate(-50%, -50%);
             z-index: 10;
         }
+        /* 新增：中心数字时间显示区域 */
+        .time-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.6); /* 半透明黑底，防止被背景挡住 */
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: monospace;
+            padding: 10px 15px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 11; /* 放在最上层 */
+        }
     </style>
 </head>
 <body>
@@ -86,33 +114,58 @@
     <div class="hand hour" id="h"></div>
     <div class="hand min" id="m"></div>
     <div class="hand sec" id="s"></div>
+    <!-- 新增：数字时间显示元素 -->
+    <div class="time-display" id="timeText"></div>
 </div>
 
 <script>
 const clock = document.querySelector('.clock');
-const numbers = [12,13,14,15,16,17,18,19,20,21,22,23,0,1,2,3,4,5,6,7,8,9,10,11];
+const timeText = document.getElementById('timeText');
+const numbers24 = [12,13,14,15,16,17,18,19,20,21,22,23,0,1,2,3,4,5,6,7,8,9,10,11];
+const numbers12 = [12,1,2,3,4,5,6,7,8,9,10,11];
 
+// 1. 外圈白色24小时数字
 for(let i=0; i<24; i++){
     let el = document.createElement('div');
-    el.className = 'num';
+    el.className = 'num-24';
     const angle = i * 15;
     el.style.transform = `rotate(${angle}deg)`;
 
     let span = document.createElement('span');
     span.style.display = 'inline-block';
     span.style.transform = `rotate(${-angle}deg)`;
-    span.innerText = numbers[i];
+    span.innerText = numbers24[i];
+    span.style.marginTop = '10px';
 
     el.appendChild(span);
     clock.appendChild(el);
 }
 
+// 2. 内圈红色12小时数字
+for(let i=0; i<12; i++){
+    let el = document.createElement('div');
+    el.className = 'num-12';
+    const angle = i * 30;
+    el.style.transform = `rotate(${angle}deg)`;
+
+    let span = document.createElement('span');
+    span.style.display = 'inline-block';
+    span.style.transform = `rotate(${-angle}deg)`;
+    span.innerText = numbers12[i];
+    span.style.marginTop = '50px';
+
+    el.appendChild(span);
+    clock.appendChild(el);
+}
+
+// 时间更新函数
 function updateTime(){
     const now = new Date();
     let h = now.getHours();
     let m = now.getMinutes();
     let s = now.getSeconds();
 
+    // 更新指针
     let hAngle = (h - 12) * 15 + m * 0.25 + s * (15/3600);
     let mAngle = m * 6 + s * 0.1;
     let sAngle = s * 6;
@@ -120,8 +173,15 @@ function updateTime(){
     document.getElementById('h').style.transform = `rotate(${hAngle}deg)`;
     document.getElementById('m').style.transform = `rotate(${mAngle}deg)`;
     document.getElementById('s').style.transform = `rotate(${sAngle}deg)`;
+
+    // 更新中心数字时间（自动补零）
+    const hStr = String(h).padStart(2, '0');
+    const mStr = String(m).padStart(2, '0');
+    const sStr = String(s).padStart(2, '0');
+    timeText.innerText = `${hStr}:${mStr}:${sStr}`;
 }
 
+// 初始化并每秒更新
 updateTime();
 setInterval(updateTime, 1000);
 </script>
